@@ -197,10 +197,138 @@ node_t *rbtree_max(const rbtree *t)
   return cur;
 }
 
+node_t *get_succesor(rbtree *t, node_t *z);
+void rb_transplant(rbtree *t, node_t *u, node_t *v);
+void rb_erase_fixup(rbtree *t, node_t *n);
 int rbtree_erase(rbtree *t, node_t *p)
 {
   // TODO: implement erase
+  node_t *n_extra;
+  node_t *n_erasedc = p;
+  color_t color_erased = n_erasedc->color;
+  if (p->right == t->nil)
+  {
+    n_extra = p->left;
+    rb_transplant(t, p, p->left);
+  }
+  else if (p->left == t->nil)
+  {
+    n_extra = p->right;
+    rb_transplant(t, p, p->right);
+  }
+  else
+  {
+    n_erasedc = get_succesor(t, p);
+    color_erased = n_erasedc->color;
+    n_extra = n_erasedc->right;
+    if (n_erasedc->parent == p)
+    {
+      n_extra->parent = n_erasedc;
+    }
+    else
+    {
+      rb_transplant(t, n_erasedc, n_erasedc->right);
+      n_erasedc->right = p->right;
+      n_erasedc->right->parent = n_erasedc;
+    }
+    rb_transplant(t, p, n_erasedc);
+    n_erasedc->left = p->left;
+    n_erasedc->left->parent = n_erasedc;
+    n_erasedc->color = p->color;
+  }
+  free(p);
+
+  if (color_erased == RBTREE_BLACK)
+    rb_erase_fixup(t, n_extra);
+
   return 0;
+}
+
+node_t *get_succesor(rbtree *t, node_t *z)
+{
+  node_t *cur = z->right;
+  while (cur != t->nil && cur->left != t->nil)
+    cur = cur->left;
+  return cur;
+}
+void rb_transplant(rbtree *t, node_t *u, node_t *v)
+{
+  if (u->parent == t->nil)
+    t->root = v;
+  else if (u == u->parent->left)
+    u->parent->left = v;
+  else
+    u->parent->right = v;
+  v->parent = u->parent;
+}
+void rb_erase_fixup(rbtree *t, node_t *n_extra)
+{
+  while (n_extra != t->root && n_extra->color == RBTREE_BLACK)
+  {
+    if (n_extra == n_extra->parent->left)
+    {
+      node_t *n_sibling = n_extra->parent->right;
+      if (n_sibling->color == RBTREE_RED)
+      {
+        n_extra->parent->color = RBTREE_RED;
+        n_sibling->color = RBTREE_BLACK;
+        rotate_left(t, n_extra->parent);
+        n_sibling = n_extra->parent->right;
+      }
+      if (n_sibling->left->color == RBTREE_BLACK && n_sibling->right->color == RBTREE_BLACK)
+      {
+        n_sibling->color = RBTREE_RED;
+        n_extra = n_extra->parent;
+      }
+      else
+      {
+        if (n_sibling->right->color == RBTREE_BLACK)
+        {
+          n_sibling->left->color = RBTREE_BLACK;
+          n_sibling->color = RBTREE_RED;
+          rotate_right(t, n_sibling);
+          n_sibling = n_extra->parent->right;
+        }
+        n_sibling->color = n_extra->parent->color;
+        n_extra->parent->color = RBTREE_BLACK;
+        n_sibling->right->color = RBTREE_BLACK;
+        rotate_left(t, n_extra->parent);
+        n_extra = t->root;
+      }
+    }
+    else
+    {
+      node_t *n_sibling = n_extra->parent->left;
+      if (n_sibling->color == RBTREE_RED)
+      {
+        n_extra->parent->color = RBTREE_RED;
+        n_sibling->color = RBTREE_BLACK;
+        rotate_right(t, n_extra->parent);
+        n_sibling = n_extra->parent->left;
+      }
+      if (n_sibling->left->color == RBTREE_BLACK && n_sibling->right->color == RBTREE_BLACK)
+      {
+        n_sibling->color = RBTREE_RED;
+        n_extra = n_extra->parent;
+      }
+      else
+      {
+        if (n_sibling->left->color == RBTREE_BLACK)
+        {
+          n_sibling->right->color = RBTREE_BLACK;
+          n_sibling->color = RBTREE_RED;
+          rotate_left(t, n_sibling);
+          n_sibling = n_extra->parent->left;
+        }
+        n_sibling->color = n_extra->parent->color;
+        n_extra->parent->color = RBTREE_BLACK;
+        n_sibling->left->color = RBTREE_BLACK;
+        rotate_right(t, n_extra->parent);
+        n_extra = t->root;
+      }
+    }
+  }
+  n_extra->color = RBTREE_BLACK;
 }
 
 
