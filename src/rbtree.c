@@ -166,19 +166,35 @@ void rb_insert_fixup(rbtree *t, node_t *n)
 node_t *rbtree_find(const rbtree *t, const key_t key)
 {
   // TODO: implement find
-  return t->root;
+  node_t *cur = t->root;
+  while (cur != t->nil && cur->key != key)
+  {
+    if (key < cur->key)
+      cur = cur->left;
+    else
+      cur = cur->right;
+  }
+  if (cur == t->nil)
+    return NULL;
+  return cur;
 }
 
 node_t *rbtree_min(const rbtree *t)
 {
   // TODO: implement find
-  return t->root;
+  node_t *cur = t->root;
+  while (cur != t->nil && cur->left != t->nil)
+    cur = cur->left;
+  return cur;
 }
 
 node_t *rbtree_max(const rbtree *t)
 {
   // TODO: implement find
-  return t->root;
+  node_t *cur = t->root;
+  while (cur != t->nil && cur->right != t->nil)
+    cur = cur->right;
+  return cur;
 }
 
 int rbtree_erase(rbtree *t, node_t *p)
