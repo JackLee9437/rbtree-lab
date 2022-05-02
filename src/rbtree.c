@@ -37,14 +37,130 @@ void delete_node(rbtree *t, node_t *p)
 }
 
 
-void rotate_left(node_t *p);
-void rotate_right(node_t *p);
-void change_color(node_t *p);
-
+node_t *new_node(rbtree *t, const key_t key);
+void rotate_left(rbtree *t, node_t *p);
+void rotate_right(rbtree *t, node_t *p);
+void rb_insert_fixup(rbtree *t, node_t *n);
 node_t *rbtree_insert(rbtree *t, const key_t key)
 {
   // TODO: implement insert
-  return t->root;
+  node_t *new = new_node(t, key);
+  node_t *cur = t->root;
+  node_t *p = t->nil;
+  while (cur != t->nil)
+  {
+    p = cur;
+    if (key < cur->key)
+      cur = cur->left;
+    else
+      cur = cur->right;
+  }
+  new->parent = p;
+  if (p == t->nil)
+    t->root = new;
+  else if (key < p->key)
+    p->left = new;
+  else
+    p->right = new;
+
+  rb_insert_fixup(t, new);
+  return new;
+}
+
+node_t *new_node(rbtree *t, const key_t key)
+{
+  node_t *node = (node_t *)calloc(1, sizeof(node_t));
+  node->color = RBTREE_RED;
+  node->key = key;
+  node->left = t->nil;
+  node->right = t->nil;
+  node->parent = t->nil;
+  return node;
+}
+void rotate_left(rbtree *t, node_t *p)
+{
+  node_t *rc = p->right;
+  p->right = rc->left;
+
+  if (rc->left != t->nil)
+    rc->left->parent = p;
+
+  rc->parent = p->parent;
+  if (p->parent == t->nil)
+    t->root = rc;
+  else if (p == p->parent->left)
+    p->parent->left = rc;
+  else
+    p->parent->right = rc;
+  rc->left = p;
+  p->parent = rc;
+}
+void rotate_right(rbtree *t, node_t *p)
+{
+  node_t *lc = p->left;
+  p->left = lc->right;
+
+  if (lc->right != t->nil)
+    lc->right->parent = p;
+
+  lc->parent = p->parent;
+  if (p->parent == t->nil)
+    t->root = lc;
+  else if (p == p->parent->right)
+    p->parent->right = lc;
+  else
+    p->parent->left = lc;
+  lc->right = p;
+  p->parent = lc;
+}
+void rb_insert_fixup(rbtree *t, node_t *n)
+{
+  while (n->parent != t->nil && n->parent->color == RBTREE_RED)
+  {
+    if (n->parent == n->parent->parent->left)
+    {
+      node_t *u = n->parent->parent->right;
+      if (u->color == RBTREE_RED)
+      {
+        n->parent->parent->color = RBTREE_RED;
+        n->parent->color = u->color = RBTREE_BLACK;
+        n = n->parent->parent;
+      }
+      else
+      {
+        if (n == n->parent->right)
+        {
+          n = n->parent;
+          rotate_left(t, n);
+        }
+        n->parent->parent->color = RBTREE_RED;
+        n->parent->color = RBTREE_BLACK;
+        rotate_right(t, n->parent->parent);
+      }
+    }
+    else
+    {
+      node_t *u = n->parent->parent->left;
+      if (u->color == RBTREE_RED)
+      {
+        n->parent->color = u->color = RBTREE_BLACK;
+        n->parent->parent->color = RBTREE_RED;
+        n = n->parent->parent;
+      }
+      else
+      {
+        if (n == n->parent->left)
+        {
+          n = n->parent;
+          rotate_right(t, n);
+        }
+        n->parent->parent->color = RBTREE_RED;
+        n->parent->color = RBTREE_BLACK;
+        rotate_left(t, n->parent->parent);
+      }
+    }
+  }
+  t->root->color = RBTREE_BLACK;
 }
 
 node_t *rbtree_find(const rbtree *t, const key_t key)
