@@ -10,6 +10,7 @@ node_t _NIL = {
     .parent = NULL};
 node_t *NIL = &_NIL;
 
+// init
 rbtree *new_rbtree(void)
 {
   rbtree *p = (rbtree *)calloc(1, sizeof(rbtree));
@@ -18,6 +19,7 @@ rbtree *new_rbtree(void)
   // TODO: initialize struct if needed
   return p;
 }
+
 void delete_node(rbtree *t, node_t *p);
 void delete_rbtree(rbtree *t)
 {
@@ -36,7 +38,7 @@ void delete_node(rbtree *t, node_t *p)
   }
 }
 
-
+// insert
 node_t *new_node(rbtree *t, const key_t key);
 void rotate_left(rbtree *t, node_t *p);
 void rotate_right(rbtree *t, node_t *p);
@@ -163,6 +165,7 @@ void rb_insert_fixup(rbtree *t, node_t *n)
   t->root->color = RBTREE_BLACK;
 }
 
+// find
 node_t *rbtree_find(const rbtree *t, const key_t key)
 {
   // TODO: implement find
@@ -179,6 +182,7 @@ node_t *rbtree_find(const rbtree *t, const key_t key)
   return cur;
 }
 
+// min
 node_t *rbtree_min(const rbtree *t)
 {
   // TODO: implement find
@@ -188,6 +192,7 @@ node_t *rbtree_min(const rbtree *t)
   return cur;
 }
 
+// max
 node_t *rbtree_max(const rbtree *t)
 {
   // TODO: implement find
@@ -197,6 +202,7 @@ node_t *rbtree_max(const rbtree *t)
   return cur;
 }
 
+// erase
 node_t *get_succesor(rbtree *t, node_t *z);
 void rb_transplant(rbtree *t, node_t *u, node_t *v);
 void rb_erase_fixup(rbtree *t, node_t *n);
@@ -331,7 +337,7 @@ void rb_erase_fixup(rbtree *t, node_t *n_extra)
   n_extra->color = RBTREE_BLACK;
 }
 
-
+// to array
 int inorder_rbtree(const rbtree *t, const node_t *p, key_t *arr, const size_t n, int *i);
 int rbtree_to_array(const rbtree *t, key_t *arr, const size_t n)
 {
