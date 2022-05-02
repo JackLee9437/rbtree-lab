@@ -2,22 +2,40 @@
 
 #include <stdlib.h>
 
+node_t _NIL = {
+    .color = RBTREE_BLACK,
+    .key = 0,
+    .left = NULL,
+    .right = NULL,
+    .parent = NULL};
+node_t *NIL = &_NIL;
+
 rbtree *new_rbtree(void)
 {
   rbtree *p = (rbtree *)calloc(1, sizeof(rbtree));
-  p->nil = NULL;
-  p->root = NULL;
+  p->nil = NIL;
+  p->root = p->nil;
   // TODO: initialize struct if needed
   return p;
 }
-
-void delete_node(node_t *p);
-
+void delete_node(rbtree *t, node_t *p);
 void delete_rbtree(rbtree *t)
 {
   // TODO: reclaim the tree nodes's memory
+  delete_node(t, t->root);
   free(t);
 }
+
+void delete_node(rbtree *t, node_t *p)
+{
+  if (p != t->nil)
+  {
+    delete_node(t, p->left);
+    delete_node(t, p->right);
+    free(p);
+  }
+}
+
 
 void rotate_left(node_t *p);
 void rotate_right(node_t *p);
