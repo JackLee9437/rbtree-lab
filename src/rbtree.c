@@ -20,21 +20,23 @@ rbtree *new_rbtree(void)
   return p;
 }
 
-void delete_node(rbtree *t, node_t *p);
+void delete_all_node(rbtree *t, node_t *p);
 void delete_rbtree(rbtree *t)
 {
   // TODO: reclaim the tree nodes's memory
-  delete_node(t, t->root);
+  delete_all_node(t, t->root);
   free(t);
+  t = NULL;
 }
 
-void delete_node(rbtree *t, node_t *p)
+void delete_all_node(rbtree *t, node_t *p)
 {
   if (p != t->nil)
   {
-    delete_node(t, p->left);
-    delete_node(t, p->right);
+    delete_all_node(t, p->left);
+    delete_all_node(t, p->right);
     free(p);
+    p = NULL;
   }
 }
 
@@ -243,6 +245,7 @@ int rbtree_erase(rbtree *t, node_t *p)
     n_erasedc->color = p->color;
   }
   free(p);
+  p = NULL;
 
   if (color_erased == RBTREE_BLACK)
     rb_erase_fixup(t, n_extra);
@@ -352,9 +355,8 @@ int inorder_rbtree(const rbtree *t, const node_t *p, key_t *arr, const size_t n,
   if (p != t->nil)
   {
     inorder_rbtree(t, p->left, arr, n, i);
-    arr[(*i)++] = p->key;
-    if (*i == n)
-      return 0;
+    if (*i != n)
+      arr[(*i)++] = p->key;
     inorder_rbtree(t, p->right, arr, n, i);
   }
   return 0;
